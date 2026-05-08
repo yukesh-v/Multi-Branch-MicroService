@@ -21,7 +21,7 @@ pipeline {
             ./venv/bin/pip install --upgrade pip
             
             # CRITICAL FIX: Install these first to support building grpcio wheel
-            ./venv/bin/pip install setuptools wheel
+            ./venv/bin/pip install "setuptools<82.0.0" wheel
             
             ./venv/bin/pip install --no-cache-dir -r requirements.txt
             ./venv/bin/pip install pytest ruff mypy bandit
