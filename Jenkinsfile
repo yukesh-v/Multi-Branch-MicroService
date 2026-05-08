@@ -49,11 +49,9 @@ pipeline {
             stage('Docker Build') {
                 steps {
                     script {
-                        dir('src') {
                             withDockerRegistry(credentialsId: 'docker-cred') {
                                 sh "docker build -t yukesh24/paymentservice:${BUILD_NUMBER} ."
                             }
-                        }
                     }
                 }
             }
@@ -65,12 +63,10 @@ pipeline {
             stage('Docker Push') {
                 steps {
                     script {
-                        dir('src') {
                             withDockerRegistry(credentialsId: 'docker-cred') {
                                 sh "docker push yukesh24/paymentservice:${BUILD_NUMBER}"
                             }
                         }
-                    }
                 }
             }
         }
