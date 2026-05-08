@@ -208,7 +208,7 @@ func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
 	var err error
 	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
 	defer cancel()
-	*conn, err = conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials())),
+	*conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials())),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
 		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()))
 	if err != nil {
