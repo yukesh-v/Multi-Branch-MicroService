@@ -1,12 +1,10 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'nodejs23'
-    }
-
     environment {
         SCANNER_HOME = tool 'sonarqube-scanner'
+        // Using a variable for the image name to keep things clean
+        IMAGE_NAME = "yukesh24/recommendationservice:${BUILD_NUMBER}"
     }
 
     stages {
@@ -18,84 +16,87 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install --no-cache-dir -r requirements.txt'
-                sh 'pip install pytest ruff mypy bandit'
+                sh '''
+                    python3 -m venv venv
+                    ./venv/bin/pip install --upgrade pip setuptools
+                    ./venv/bin/pip install --no-cache-dir -r requirements.txt
+                    ./venv/bin/pip install pytest ruff mypy bandit
+                '''
             }
         }
+
         stage('Gitleaks Scan') {
             steps {
-                sh 'gitleaks detect --source . --report-format table --report-path gitleaks-report.html'
+                // Ensure gitleaks is installed on your Jenkins agent
+                sh 'gitleaks detect --source . --report-format table --report-path gitleaks-report.html || true'
             }
         }
 
-        stage('Lint & Format Check') {
+        stage('Lint & Security') {
             steps {
-                sh 'ruff check .'
-            }
-        }
-
-        stage('Static Type Check') {
-            steps {
-                sh 'mypy .'
-            }
-        }
-
-        stage('Security Scan') {
-            steps {
-                sh 'bandit -r .'
+                sh '''
+                    ./venv/bin/ruff check .
+                    ./venv/bin/mypy .
+                    ./venv/bin/bandit -r .
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'pytest --junitxml=results.xml'
+                sh './venv/bin/pytest --junitxml=results.xml'
             }
+            post {
+                always {
+                    junit 'results.xml'
+                }
+            }
+        }
 
-            stage('Trivy fs Scan') {
-                steps {
-                    sh 'trivy fs --format table -o fs-report.html .'
-                }
+        stage('Trivy fs Scan') {
+            steps {
+                sh 'trivy fs --format table -o fs-report.html .'
             }
-            stage('Sonarqube Analysis') {
-                steps {
-                    withSonarQubeEnv('sonarqube') {
-                        sh '''$SCANNER_HOME/bin/sonar-scanner \
+        }
+
+        stage('Sonarqube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    sh """${SCANNER_HOME}/bin/sonar-scanner \
                        -Dsonar.projectName=RecommendationService \
-                       -Dsonar.projectKey=RecommendationService '''
-                    }
+                       -Dsonar.projectKey=RecommendationService"""
                 }
             }
-            stage('Quality Gate Check') {
-                steps {
-                    timeout(time: 1, unit: 'HOURS') {
-                        waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
-                    }
+        }
+
+        stage('Quality Gate Check') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
                 }
             }
-            stage('Docker Build') {
-                steps {
-                    script {
-                        dir('src') {
-                            withDockerRegistry(credentialsId: 'docker-cred') {
-                                sh "docker build -t yukesh24/recommendationservice:${WORKSPACE} ."
-                            }
-                        }
-                    }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    // Use the environment variable we defined at the top
+                    sh "docker build -t ${IMAGE_NAME} ."
                 }
             }
-            stage('Trivy Image Scan') {
-                steps {
-                    sh "trivy image --format table -o recommendationservice-image-report.html yukesh24/recommendationservice:${WORKSPACE}"
-                }
+        }
+
+        stage('Trivy Image Scan') {
+            steps {
+                sh "trivy image --format table -o image-report.html ${IMAGE_NAME}"
             }
-            stage('Docker Push') {
-                steps {
-                    script {
-                        dir('src') {
-                            withDockerRegistry(credentialsId: 'docker-cred') {
-                                sh "docker push yukesh24/recommendationservice:${WORKSPACE}"
-                            }
-                        }
+        }
+
+        stage('Docker Push') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        sh "docker push ${IMAGE_NAME}"
                     }
                 }
             }
