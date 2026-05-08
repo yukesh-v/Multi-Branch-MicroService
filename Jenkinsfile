@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'nodejs23'
-    }
-
     environment {
         SCANNER_HOME = tool 'sonarqube-scanner'
     }
@@ -77,7 +73,7 @@ pipeline {
                     script {
                         dir('src') {
                             withDockerRegistry(credentialsId: 'docker-cred') {
-                                sh "docker build -t yukesh24/emailservice:${WORKSPACE} ."
+                                sh "docker build -t yukesh24/emailservice:${BUILD_NUMBER} ."
                             }
                         }
                     }
@@ -85,7 +81,7 @@ pipeline {
             }
             stage('Trivy Image Scan') {
                 steps {
-                    sh "trivy image --format table -o emailservice-image-report.html yukesh24/emailservice:${WORKSPACE}"
+                    sh "trivy image --format table -o emailservice-image-report.html yukesh24/emailservice:${BUILD_NUMBER}"
                 }
             }
             stage('Docker Push') {
@@ -93,7 +89,7 @@ pipeline {
                     script {
                         dir('src') {
                             withDockerRegistry(credentialsId: 'docker-cred') {
-                                sh "docker push yukesh24/emailservice:${env.WORKSPACE}"
+                                sh "docker push yukesh24/emailservice:${BUILD_NUMBER}"
                             }
                         }
                     }
