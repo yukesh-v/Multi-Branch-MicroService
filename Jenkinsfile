@@ -53,6 +53,11 @@ environment{
                 }
             }
         }
+        stage('Gradle Format') {
+            steps {
+                sh './gradlew goJF'
+            }
+        }
         stage('Gradle Build') {
             steps {
                 sh './gradlew clean build'
