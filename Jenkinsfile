@@ -55,6 +55,7 @@ environment{
         }
         stage('Gradle Build') {
             steps {
+                sh './gradlew googleJavaFormat'
                 sh './gradlew clean build --info'
             }
         }
