@@ -14,7 +14,7 @@ environment{
     stages {
         stage('Git checkout') {
             steps {
-                git branch: 'AdService', url: 'https://github.com/yukesh-v/Multi-Branch-MicroService.git'
+                git branch: 'Adservice', url: 'https://github.com/yukesh-v/Multi-Branch-MicroService.git'
             }
         }
          stage('Gitleaks Scan') {
