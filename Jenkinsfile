@@ -20,7 +20,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    sh "docker build -t yukesh24/checkoutservice:${BUILD_NUMBER} ."
+                    sh "DOCKER_BUILDKIT=1 docker build -t yukesh24/checkoutservice:${BUILD_NUMBER} ."
                 }
             }
         }
