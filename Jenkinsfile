@@ -46,7 +46,7 @@ pipeline {
             steps {
                 sh 'pytest --junitxml=results.xml'
             }
-
+        }
             stage('Trivy fs Scan') {
                 steps {
                     sh 'trivy fs --format table -o fs-report.html .'
@@ -97,4 +97,4 @@ pipeline {
             }
         }
     }
-}
+
