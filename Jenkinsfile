@@ -49,7 +49,7 @@ pipeline {
                 script {
                     dir('src') {
                         withDockerRegistry(credentialsId: 'docker-cred') {
-                            sh "docker build -t yukesh24/currencyservice:${WORKSPACE} ."
+                            sh "docker build -t yukesh24/currencyservice:${BUILD_NUMBER} ."
                         }
                     }
                 }
@@ -57,7 +57,7 @@ pipeline {
         }
         stage('Trivy Image Scan') {
             steps {
-                sh "trivy image --format table -o currencyservice-image-report.html yukesh24/currencyservice:${WORKSPACE}"
+                sh "trivy image --format table -o currencyservice-image-report.html yukesh24/currencyservice:${BUILD_NUMBER}"
             }
         }
         stage('Docker Push') {
@@ -65,7 +65,7 @@ pipeline {
                 script {
                     dir('src') {
                         withDockerRegistry(credentialsId: 'docker-cred') {
-                            sh "docker push yukesh24/currencyservice:${env.WORKSPACE}"
+                            sh "docker push yukesh24/currencyservice:${BUILD_NUMBER}"
                         }
                     }
                 }
