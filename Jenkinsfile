@@ -29,7 +29,7 @@ environment{
         }
         stage('Gradle Compile') {
             steps {
-                sh './gradlew compileJava'
+                sh './gradlew compileJava assemble -x verifyGoogleJavaFormat'
             }
         }
 
@@ -55,7 +55,6 @@ environment{
         }
         stage('Gradle Build') {
             steps {
-                sh './gradlew assemble -x verifyGoogleJavaFormat'
                 sh './gradlew clean build'
             }
         }
