@@ -42,7 +42,7 @@ environment{
         stage('Sonarqube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                 sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Adservice -Dsonar.projectKey=Adservice -Dsonar.binaries= .'''
+                 sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Adservice -Dsonar.projectKey=Adservice -Dsonar.java.binaries=.'''
              }
            }
         }  
