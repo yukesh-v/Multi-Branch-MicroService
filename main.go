@@ -241,7 +241,7 @@ func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
 //	if err != nil {
 //		panic(errors.Wrapf(err, "grpc: failed to connect %s", addr))
 //	}
-}
+// }
 
 func (cs *checkoutService) Check(ctx context.Context, req *healthpb.HealthCheckRequest) (*healthpb.HealthCheckResponse, error) {
 	return &healthpb.HealthCheckResponse{Status: healthpb.HealthCheckResponse_SERVING}, nil
