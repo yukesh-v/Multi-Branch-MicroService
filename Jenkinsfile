@@ -1,24 +1,85 @@
 pipeline {
     agent any
 
+ tools {
+        
+        gradle 'gradle'
+        jdk 'jdk17'
+    }
+    
+environment{
+    SCANNER_HOME = tool 'sonarqube-scanner'
+}
+
     stages {
-        stage('Build & Tag Docker Image') {
+        stage('Git checkout') {
             steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/adservice:latest ."
-                    }
+                git branch: 'AdService', url: 'https://github.com/yukesh-v/Multi-Branch-MicroService.git'
+            }
+        }
+         stage('Gitleaks Scan') {
+            steps {
+                sh 'gitleaks detect --source . --report-format table --report-path gitleaks-report.html'
+            }
+        }
+         stage('Grant Persmissions') {
+            steps {
+                sh 'chmod +X gradlew'
+            }
+        }
+        stage('Gradle Compile') {
+            steps {
+                sh './gradlew compileJava'
+            }
+        }
+
+        stage('Trivy fs Scan') {
+            steps {
+                sh 'trivy fs --format table -o fs-report.html .'
+            }
+        }
+
+        stage('Sonarqube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                 sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Nodejs -Dsonar.projectKey=Nodejs'''
+             }
+           }
+        }  
+          stage('Quality Gate Check') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
                 }
             }
         }
-        
-        stage('Push Docker Image') {
+        stage('Gradle Build') {
+            steps {
+                sh './gradlew clean build'
+            }
+        }
+
+        stage('Docker Build') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/adservice:latest "
-                    }
+                  withDockerRegistry(credentialsId: 'docker-cred') {
+                     sh 'docker build -t yukesh24/adservice:${WORKSPACE} .'   
                 }
+              }
+            }
+        }
+        stage('Trivy Image Scan') {
+            steps {
+                sh 'trivy image --format table -o adservice-image-report.html yukesh24/adservice:${WORKSPACE} '
+            }
+        }
+        stage('Docker Push') {
+            steps {
+                script {
+                   withDockerRegistry(credentialsId: 'docker-cred') {
+                     sh 'docker push yukesh24/adservice:${WORKSPACE} '
+                 }
+               }
             }
         }
     }
