@@ -14,7 +14,6 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install --no-cache-dir -r requirements.txt'
                 sh 'pip install pytest ruff mypy bandit'
             }
         }
