@@ -37,7 +37,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker-cred') {
-                        sh "docker push yukesh24/shippingservicee:${BUILD_NUMBER}"
+                        sh "docker push yukesh24/shippingservice:${BUILD_NUMBER}"
                     }
                 }
             }
