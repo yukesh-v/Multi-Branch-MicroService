@@ -15,8 +15,12 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh """python3 -m venv venv
-            ./venv/bin/pip install --no-cache-dir -r requirements.txt
-            ./venv/bin/python -m pytest"""
+            ./venv/bin/pip install --upgrade pip
+            
+            # This is the critical fix:
+            ./venv/bin/pip install setuptools wheel
+            
+            ./venv/bin/pip install --no-cache-dir -r requirements.txt"""
             }
         }
         stage('Gitleaks Scan') {
