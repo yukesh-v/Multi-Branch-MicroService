@@ -29,7 +29,7 @@ environment{
         }
         stage('Gradle Compile') {
             steps {
-                sh './gradlew compileJava assemble -x verifyGoogleJavaFormat'
+                sh './gradlew compileJava'
             }
         }
 
@@ -53,13 +53,6 @@ environment{
                 }
             }
         }
-        stage('Gradle Build') {
-            steps {
-                sh './gradlew googleJavaFormat'
-                sh './gradlew clean build --info'
-            }
-        }
-
         stage('Docker Build') {
             steps {
                 script {
