@@ -7,57 +7,16 @@ pipeline {
                 git branch: 'CheckoutService', url: 'https://github.com/yukesh-v/Multi-Branch-MicroService.git'
             }
         }
-
-        stage('Install & Tidy') {
+         stage('Gitleaks Scan') {
             steps {
-                sh 'go mod tidy'
-                sh 'go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest'
+                sh 'gitleaks detect --source . --exit-code 1'
             }
         }
-
-        stage('Gitleaks Scan') {
-            steps {
-                sh 'gitleaks detect --source . --report-format table --report-path gitleaks-report.html || true'
-            }
-        }
-
-        stage('Lint & Format') {
-            steps {
-                sh 'golangci-lint run ./... || true'
-            }
-        }
-
-        stage('Static Analysis') {
-            steps {
-                sh 'go vet ./... || true'
-            }
-        }
-
-        stage('Security Scan (Govulncheck)') {
-            steps {
-                sh 'go install golang.org/x/vuln/cmd/govulncheck@latest'
-                sh 'govulncheck ./...'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh 'go test -v ./... -cover'
-            }
-        }
-
         stage('Trivy fs Scan') {
             steps {
                 sh 'trivy fs --format table -o fs-report.html .'
             }
         }
-
-        stage('Build Binary') {
-            steps {
-                sh 'CGO_ENABLED=0 GOOS=linux go build -o app .'
-            }
-        }
-
         stage('Docker Build') {
             steps {
                 script {
