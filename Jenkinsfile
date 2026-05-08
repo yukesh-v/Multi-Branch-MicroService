@@ -53,13 +53,9 @@ environment{
                 }
             }
         }
-        stage('Gradle Format') {
-            steps {
-                sh './gradlew goJF'
-            }
-        }
         stage('Gradle Build') {
             steps {
+                sh './gradlew assemble -x verifyGoogleJavaFormat'
                 sh './gradlew clean build'
             }
         }
