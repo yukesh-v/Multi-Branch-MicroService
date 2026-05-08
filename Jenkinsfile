@@ -1,22 +1,101 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'nodejs23'
+    }
+
+    environment {
+        SCANNER_HOME = tool 'sonarqube-scanner'
+    }
+
     stages {
-        stage('Build & Tag Docker Image') {
+        stage('Git checkout') {
             steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/loadgenerator:latest ."
+                git branch: 'LoadGeneratorService', url: 'https://github.com/yukesh-v/Multi-Branch-MicroService.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip install --no-cache-dir -r requirements.txt'
+                sh 'pip install pytest ruff mypy bandit'
+            }
+        }
+        stage('Gitleaks Scan') {
+            steps {
+                sh 'gitleaks detect --source . --report-format table --report-path gitleaks-report.html'
+            }
+        }
+
+        stage('Lint & Format Check') {
+            steps {
+                sh 'ruff check .'
+            }
+        }
+
+        stage('Static Type Check') {
+            steps {
+                sh 'mypy .'
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                sh 'bandit -r .'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'pytest --junitxml=results.xml'
+            }
+
+            stage('Trivy fs Scan') {
+                steps {
+                    sh 'trivy fs --format table -o fs-report.html .'
+                }
+            }
+            stage('Sonarqube Analysis') {
+                steps {
+                    withSonarQubeEnv('sonarqube') {
+                        sh '''$SCANNER_HOME/bin/sonar-scanner \
+                       -Dsonar.projectName=LoadGeneratorService \
+                       -Dsonar.projectKey=LoadGeneratorService '''
                     }
                 }
             }
-        }
-        
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/loadgenerator:latest"
+            stage('Quality Gate Check') {
+                steps {
+                    timeout(time: 1, unit: 'HOURS') {
+                        waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                    }
+                }
+            }
+            stage('Docker Build') {
+                steps {
+                    script {
+                        dir('src') {
+                            withDockerRegistry(credentialsId: 'docker-cred') {
+                                sh "docker build -t yukesh24/loadgeneratorservice:${WORKSPACE} ."
+                            }
+                        }
+                    }
+                }
+            }
+            stage('Trivy Image Scan') {
+                steps {
+                    sh "trivy image --format table -o loadgeneratorservice-image-report.html yukesh24/loadgeneratorservice:${WORKSPACE}"
+                }
+            }
+            stage('Docker Push') {
+                steps {
+                    script {
+                        dir('src') {
+                            withDockerRegistry(credentialsId: 'docker-cred') {
+                                sh "docker push yukesh24/loadgeneratorservice:${env.WORKSPACE}"
+                            }
+                        }
                     }
                 }
             }
