@@ -14,8 +14,9 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'python3 -m pip install -r requirements.txt'
-                sh 'python3 -m pip install pytest ruff mypy bandit'
+                sh """python3 -m venv venv
+            ./venv/bin/pip install --no-cache-dir -r requirements.txt
+            ./venv/bin/python -m pytest"""
             }
         }
         stage('Gitleaks Scan') {
