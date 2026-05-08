@@ -1,22 +1,43 @@
 pipeline {
     agent any
-
+    
     stages {
-        stage('Build & Tag Docker Image') {
+        stage('Git checkout') {
+            steps {
+                git branch: 'ProductCatalogService', url: 'https://github.com/yukesh-v/Multi-Branch-MicroService.git'
+            }
+        }
+         stage('Gitleaks Scan') {
+            steps {
+                sh 'gitleaks detect --source . --exit-code 1'
+            }
+        }
+        stage('Trivy fs Scan') {
+            steps {
+                sh 'trivy fs --format table -o fs-report.html .'
+            }
+        }
+        stage('Docker Build') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/productcatalogservice:latest ."
-                    }
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                    sh "docker build -t yukesh24/productcatalogservice:${BUILD_NUMBER} ."
+                    }    
                 }
             }
         }
-        
-        stage('Push Docker Image') {
+
+        stage('Trivy Image Scan') {
+            steps {
+                sh "trivy image --format table -o image-report.html yukesh24/productcatalogservice:${BUILD_NUMBER}"
+            }
+        }
+
+        stage('Docker Push') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/productcatalogservice:latest "
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        sh "docker push yukesh24/productcatalogservice:${BUILD_NUMBER}"
                     }
                 }
             }
