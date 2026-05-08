@@ -18,9 +18,13 @@ pipeline {
             steps {
                 sh '''
                     python3 -m venv venv
-                    ./venv/bin/pip install --upgrade pip setuptools
-                    ./venv/bin/pip install --no-cache-dir -r requirements.txt
-                    ./venv/bin/pip install pytest ruff mypy bandit
+            ./venv/bin/pip install --upgrade pip
+            
+            # CRITICAL FIX: Install these first to support building grpcio wheel
+            ./venv/bin/pip install setuptools wheel
+            
+            ./venv/bin/pip install --no-cache-dir -r requirements.txt
+            ./venv/bin/pip install pytest ruff mypy bandit
                 '''
             }
         }
