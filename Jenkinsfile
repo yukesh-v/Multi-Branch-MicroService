@@ -1,25 +1,44 @@
 pipeline {
     agent any
-
+    
     stages {
-        stage('Build & Tag Docker Image') {
+        stage('Git checkout') {
             steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/frontend:latest ."
-                    }
-                }
+                git branch: 'FrontendService', url: 'https://github.com/yukesh-v/Multi-Branch-MicroService.git'
             }
         }
-        
-        stage('Push Docker Image') {
+        stage('Gitleaks Scan') {
             steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/frontend:latest"
+                sh 'gitleaks detect --source . --report-format table --report-path gitleaks-report.html'
+            }
+        }
+        stage('Trivy fs Scan') {
+            steps {
+               sh 'trivy fs --format table -o fs-report.html .'
+                }
+            }
+            stage('Docker Build') {
+                steps {
+                    script {
+                            withDockerRegistry(credentialsId: 'docker-cred') {
+                                sh "docker build -t yukesh24/frontendservice:${BUILD_NUMBER} ."
+                         }
+                     }
+                }
+            }
+            stage('Trivy Image Scan') {
+                steps {
+                    sh "trivy image --format table -o emailservice-image-report.html yukesh24/frontendservice:${BUILD_NUMBER}"
+                }
+            }
+            stage('Docker Push') {
+                steps {
+                    script {
+                            withDockerRegistry(credentialsId: 'docker-cred') {
+                                sh "docker push yukesh24/frontendservice:${BUILD_NUMBER}"
+                        }
                     }
                 }
             }
         }
     }
-}
