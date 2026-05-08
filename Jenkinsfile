@@ -1,8 +1,7 @@
 pipeline {
     agent any
 
- tools {
-        
+ tools {     
         gradle 'gradle'
         jdk 'jdk17'
     }
@@ -57,21 +56,21 @@ environment{
             steps {
                 script {
                   withDockerRegistry(credentialsId: 'docker-cred') {
-                     sh 'docker build -t yukesh24/adservice:${WORKSPACE} .'   
+                     sh 'docker build -t yukesh24/adservice:${BUILD_NUMBER} .'   
                 }
               }
             }
         }
         stage('Trivy Image Scan') {
             steps {
-                sh 'trivy image --format table -o adservice-image-report.html yukesh24/adservice:${WORKSPACE} '
+                sh 'trivy image --format table -o adservice-image-report.html yukesh24/adservice:${BUILD_NUMBER} '
             }
         }
         stage('Docker Push') {
             steps {
                 script {
                    withDockerRegistry(credentialsId: 'docker-cred') {
-                     sh 'docker push yukesh24/adservice:${WORKSPACE} '
+                     sh 'docker push yukesh24/adservice:${BUILD_NUMBER} '
                  }
                }
             }
