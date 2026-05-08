@@ -1,25 +1,78 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'nodejs23'
+    }
+
+    environment {
+        SCANNER_HOME = tool 'sonarqube-scanner'
+    }
+
     stages {
-        stage('Build & Tag Docker Image') {
+        stage('Git checkout') {
             steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker build -t adijaiswal/paymentservice:latest ."
+                git branch: 'PaymentService', url: 'https://github.com/yukesh-v/Multi-Branch-MicroService.git'
+            }
+        }
+        stage('Gitleaks Scan') {
+            steps {
+                sh 'gitleaks detect --source . --report-format table --report-path gitleaks-report.html'
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                sh 'find . -name "*.js" -exec node --check {} +'
+            }
+        }
+        stage('Trivy fs Scan') {
+            steps {
+                sh 'trivy fs --format table -o fs-report.html .'
+                }
+            }
+            stage('Sonarqube Analysis') {
+                steps {
+                    withSonarQubeEnv('sonarqube') {
+                        sh '''$SCANNER_HOME/bin/sonar-scanner \
+                       -Dsonar.projectName=PaymentService \
+                       -Dsonar.projectKey=PaymentService '''
                     }
                 }
             }
-        }
-        
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push adijaiswal/paymentservice:latest "
+            stage('Quality Gate Check') {
+                steps {
+                    timeout(time: 1, unit: 'HOURS') {
+                        waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                    }
+                }
+            }
+            stage('Docker Build') {
+                steps {
+                    script {
+                        dir('src') {
+                            withDockerRegistry(credentialsId: 'docker-cred') {
+                                sh "docker build -t yukesh24/paymentservice:${WORKSPACE} ."
+                            }
+                        }
+                    }
+                }
+            }
+            stage('Trivy Image Scan') {
+                steps {
+                    sh "trivy image --format table -o paymentservice-image-report.html yukesh24/paymentservice:${WORKSPACE}"
+                }
+            }
+            stage('Docker Push') {
+                steps {
+                    script {
+                        dir('src') {
+                            withDockerRegistry(credentialsId: 'docker-cred') {
+                                sh "docker push yukesh24/paymentservice:${env.WORKSPACE}"
+                            }
+                        }
                     }
                 }
             }
         }
     }
-}
+
