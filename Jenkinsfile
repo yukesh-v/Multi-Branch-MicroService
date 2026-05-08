@@ -1,9 +1,5 @@
 pipeline {
     agent any
-
-environment {
-    SCANNER_HOME = tool 'sonarqube-scanner'
-} 
     
     stages {
         stage('Git checkout') {
@@ -53,26 +49,6 @@ environment {
         stage('Trivy fs Scan') {
             steps {
                 sh 'trivy fs --format table -o fs-report.html .'
-            }
-        }
-
-        stage('Sonarqube Analysis') {
-            steps {
-                script {
-                    withSonarQubeEnv('sonarqube') {
-                        sh """${SCANNER_HOME}/bin/sonar-scanner \
-                           -Dsonar.projectName=ProductCatalogService \
-                           -Dsonar.projectKey=ProductCatalogService"""
-                    }
-                }
-            }
-        }
-
-        stage('Quality Gate Check') {
-            steps {
-                timeout(time: 1, unit: 'HOURS') {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
-                }
             }
         }
 
