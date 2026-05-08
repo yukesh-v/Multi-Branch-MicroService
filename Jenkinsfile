@@ -20,7 +20,9 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
                     sh "docker build -t yukesh24/checkoutservice:${BUILD_NUMBER} ."
+                    }    
                 }
             }
         }
