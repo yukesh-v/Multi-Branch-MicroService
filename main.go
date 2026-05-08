@@ -23,12 +23,12 @@ import (
 
 	"cloud.google.com/go/profiler"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
+     "google.golang.org/grpc/credentials/insecure"
+	
 	pb "github.com/GoogleCloudPlatform/microservices-demo/src/checkoutservice/genproto"
 	money "github.com/GoogleCloudPlatform/microservices-demo/src/checkoutservice/money"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
@@ -207,14 +207,32 @@ func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
 	var err error
 	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
 	defer cancel()
+
+	// Use = instead of := because 'err' is already declared 
+	// and we need to dereference 'conn' to assign to the pointer
+	*conn, err = grpc.DialContext(ctx, addr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
+	)
+	
+	if err != nil {
+		log.Fatalf("grpc: failed to connect %s: %v", addr, err)
+	}
+}
+
+// func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
+//	var err error
+//	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
+//	defer cancel()
 	// The := operator automatically handles the *pointer and the error
-    conn, err := grpc.DialContext(ctx, addr, 
-    grpc.WithTransportCredentials(insecure.NewCredentials()), // Note: WithInsecure is deprecated
-    grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
-    grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
-)
-if err != nil {
-    log.Fatalf("did not connect: %v", err)
+//    conn, err := grpc.DialContext(ctx, addr, 
+//    grpc.WithTransportCredentials(insecure.NewCredentials()), // Note: WithInsecure is deprecated
+//    grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+//    grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
+//)
+// if err != nil {
+//    log.Fatalf("did not connect: %v", err)
 }
 //	**conn, err = grpc.DialContext(ctx, addr,
 //		grpc.WithInsecure(),
