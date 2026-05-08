@@ -28,7 +28,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/credentials/insecure"
 
 	pb "github.com/GoogleCloudPlatform/microservices-demo/src/checkoutservice/genproto"
 	money "github.com/GoogleCloudPlatform/microservices-demo/src/checkoutservice/money"
@@ -208,7 +207,8 @@ func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
 	var err error
 	ctx, cancel := context.WithTimeout(ctx, time.Second*3)
 	defer cancel()
-	*conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials())),
+	**conn, err = grpc.DialContext(ctx, addr,
+		grpc.WithInsecure(),
 		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
 		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()))
 	if err != nil {
