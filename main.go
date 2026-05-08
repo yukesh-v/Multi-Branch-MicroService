@@ -233,7 +233,7 @@ func mustConnGRPC(ctx context.Context, conn **grpc.ClientConn, addr string) {
 //)
 // if err != nil {
 //    log.Fatalf("did not connect: %v", err)
-}
+// }
 //	**conn, err = grpc.DialContext(ctx, addr,
 //		grpc.WithInsecure(),
 //		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
