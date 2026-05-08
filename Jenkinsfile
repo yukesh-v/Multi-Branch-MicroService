@@ -14,7 +14,8 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install pytest ruff mypy bandit'
+                sh 'python3 -m pip install -r requirements.txt'
+                sh 'python3 -m pip install pytest ruff mypy bandit'
             }
         }
         stage('Gitleaks Scan') {
