@@ -24,7 +24,7 @@ environment{
         }
          stage('Grant Persmissions') {
             steps {
-                sh 'chmod +X gradlew'
+                sh 'chmod +x ./gradlew'
             }
         }
         stage('Gradle Compile') {
