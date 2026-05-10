@@ -77,4 +77,15 @@ environment{
             }
         }
     }
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo "Build ${BUILD_NUMBER} passed successfully!"
+        }
+        failure {
+            echo "Build ${BUILD_NUMBER} failed. Checking logs..."
+        }
+    }
 }
