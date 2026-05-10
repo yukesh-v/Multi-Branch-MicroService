@@ -43,9 +43,7 @@ environment {
             steps {
                 script {
                     dir('src') {
-                    withDockerRegistry(credentialsId: 'docker-cred') {
                     sh "docker build -t yukesh24/cartservice:${GIT_COMMIT_REV} ."
-                     }
                    }    
                 }
             }
@@ -62,9 +60,8 @@ environment {
             steps {
                 script {
                     dir('src') {
-                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                         sh "docker push yukesh24/cartservice:${GIT_COMMIT_REV}"
-                      }
                    }
                 }
             }
