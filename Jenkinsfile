@@ -26,7 +26,7 @@ environemt {
         stage('Sonarqube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                 sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Adservice -Dsonar.projectKey=Checkoutservice '''
+                 sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Checkoutservice -Dsonar.projectKey=Checkoutservice '''
              }
            }
         }  
