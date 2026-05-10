@@ -1,6 +1,6 @@
 pipeline {
     agent any
-
+ 
 environment {
     GIT_COMMIT_REV = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 } 
