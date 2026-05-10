@@ -3,6 +3,7 @@ pipeline {
 
 environemt {
     GIT_COMMIT_REV = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+    SCANNER_HOME = tool 'sonarqube-scanner'
 }
     
     stages {
