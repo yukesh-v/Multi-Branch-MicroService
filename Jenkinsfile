@@ -60,7 +60,8 @@ environment {
             steps {
                 script {
                     dir('src') {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-cred') {
+                    withCredentials([usernamePassword(credentialsId: 'docker-cred', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                            sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                             sh "docker push yukesh24/cartservice:${GIT_COMMIT_REV}"
                       }
                    }
