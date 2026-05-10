@@ -26,7 +26,7 @@ environment {
         stage('Sonarqube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                 sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Adservice -Dsonar.projectKey=Cartservice '''
+                 sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Cartservice -Dsonar.projectKey=Cartservice '''
              }
            }
         }  
