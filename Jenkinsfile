@@ -60,8 +60,10 @@ environment {
             steps {
                 script {
                     dir('src') {
-                        sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
+                        withCredentials([string(credentialsId: 'DOCKER_USER', variable: 'DOCKER_USER'),(credentialsId: 'DOCKER_USER', variable: 'DOCKER_USER') ]) {
+                                                 sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                         sh "docker push yukesh24/cartservice:${GIT_COMMIT_REV}"
+                      }
                    }
                 }
             }
