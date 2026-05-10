@@ -62,7 +62,6 @@ environment {
                     dir('src') {
                     withDockerRegistry(credentialsId: 'docker-cred', url: 'https://index.docker.io/v1/') {
                             sh "docker push yukesh24/cartservice:${GIT_COMMIT_REV}"
-                         }
                       }
                    }
                 }
