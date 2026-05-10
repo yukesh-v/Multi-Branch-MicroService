@@ -21,6 +21,22 @@ environment {
                 sh 'trivy fs --format table -o fs-report.html .'
             }
         }
+
+        stage('Sonarqube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                 sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Adservice -Dsonar.projectKey=Cartservice '''
+             }
+           }
+        }  
+          stage('Quality Gate Check') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                }
+            }
+        }
+        
         stage('Docker Build') {
             steps {
                 script {
