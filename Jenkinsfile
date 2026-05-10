@@ -20,6 +20,7 @@ environment {
         stage('Trivy fs Scan') {
             steps {
                 sh 'trivy fs --format table -o fs-report.html .'
+                sh 'cat fs-report.html'
             }
         }
 
@@ -53,6 +54,7 @@ environment {
         stage('Trivy Image Scan') {
             steps {
                 sh "trivy image --format table -o image-report.html yukesh24/cartservice:${GIT_COMMIT_REV}"
+                sh 'cat image-report.html'
             }
         }
 
@@ -66,6 +68,17 @@ environment {
                    }
                 }
             }
+        }
+    }
+     post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo "Build ${BUILD_NUMBER} passed successfully!"
+        }
+        failure {
+            echo "Build ${BUILD_NUMBER} failed. Checking logs..."
         }
     }
 }
