@@ -3,11 +3,12 @@ pipeline {
 
  tools {     
         gradle 'gradle'
-        jdk 'jdk17'
+        jdk 'jdk19'
     }
     
 environment{
     SCANNER_HOME = tool 'sonarqube-scanner'
+    GIT_COMMIT_REV = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 }
 
     stages {
@@ -56,21 +57,21 @@ environment{
             steps {
                 script {
                   withDockerRegistry(credentialsId: 'docker-cred') {
-                     sh 'docker build -t yukesh24/adservice:${BUILD_NUMBER} .'   
+                     sh 'docker build -t yukesh24/adservice:${GIT_COMMIT_REV} .'   
                 }
               }
             }
         }
         stage('Trivy Image Scan') {
             steps {
-                sh 'trivy image --format table -o adservice-image-report.html yukesh24/adservice:${BUILD_NUMBER} '
+                sh 'trivy image --format table -o adservice-image-report.html yukesh24/adservice:${GIT_COMMIT_REV} '
             }
         }
         stage('Docker Push') {
             steps {
                 script {
                    withDockerRegistry(credentialsId: 'docker-cred') {
-                     sh 'docker push yukesh24/adservice:${BUILD_NUMBER} '
+                     sh 'docker push yukesh24/adservice:${GIT_COMMIT_REV} '
                  }
                }
             }
