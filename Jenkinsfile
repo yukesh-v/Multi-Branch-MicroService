@@ -1,5 +1,9 @@
 pipeline {
     agent any
+
+environment {
+    GIT_COMMIT_REV = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+} 
     
     stages {
         stage('Git checkout') {
@@ -22,7 +26,7 @@ pipeline {
                 script {
                     dir('src') {
                     withDockerRegistry(credentialsId: 'docker-cred') {
-                    sh "docker build -t yukesh24/cartservice:${BUILD_NUMBER} ."
+                    sh "docker build -t yukesh24/cartservice:${GIT_COMMIT_REV} ."
                      }
                    }    
                 }
@@ -31,7 +35,7 @@ pipeline {
 
         stage('Trivy Image Scan') {
             steps {
-                sh "trivy image --format table -o image-report.html yukesh24/cartservice:${BUILD_NUMBER}"
+                sh "trivy image --format table -o image-report.html yukesh24/cartservice:${GIT_COMMIT_REV}"
             }
         }
 
@@ -40,7 +44,7 @@ pipeline {
                 script {
                     dir('src') {
                     withDockerRegistry(credentialsId: 'docker-cred') {
-                        sh "docker push yukesh24/cartservice:${BUILD_NUMBER}"
+                        sh "docker push yukesh24/cartservice:${GIT_COMMIT_REV}"
                       }
                    }
                 }
