@@ -4,7 +4,7 @@ pipeline {
     environment {
         
        GIT_COMMIT_REV = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-        
+       SCANNER_HOME = tool 'sonarqube-scanner'
     }
 
     stages {
@@ -28,6 +28,20 @@ pipeline {
             }
         }
 
+        stage('Sonarqube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                 sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Recommendationservice -Dsonar.projectKey=Recommendationservice '''
+             }
+           }
+        }  
+          stage('Quality Gate Check') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                }
+            }
+        }
 
         stage('Docker Build') {
             steps {
