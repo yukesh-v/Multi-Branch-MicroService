@@ -1,5 +1,9 @@
 pipeline {
     agent any
+
+environemt {
+    GIT_COMMIT_REV = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+}
     
     stages {
         stage('Git checkout') {
@@ -17,6 +21,22 @@ pipeline {
                 sh 'trivy fs --format table -o fs-report.html .'
             }
         }
+
+        stage('Sonarqube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                 sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Adservice -Dsonar.projectKey=Checkoutservice '''
+             }
+           }
+        }  
+          stage('Quality Gate Check') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                }
+            }
+        }
+        
         stage('Docker Build') {
             steps {
                 script {
