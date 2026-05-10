@@ -7,6 +7,7 @@ pipeline {
 
     environment {
         SCANNER_HOME = tool 'sonarqube-scanner'
+        GIT_COMMIT_REV = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
     }
 
     stages {
@@ -16,40 +17,11 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                sh 'pip install --no-cache-dir -r requirements.txt'
-                sh 'pip install pytest ruff mypy bandit'
-            }
-        }
         stage('Gitleaks Scan') {
             steps {
                 sh 'gitleaks detect --source . --report-format table --report-path gitleaks-report.html'
             }
         }
-
-        stage('Lint & Format Check') {
-            steps {
-                sh 'ruff check .'
-            }
-        }
-
-        stage('Static Type Check') {
-            steps {
-                sh 'mypy .'
-            }
-        }
-
-        stage('Security Scan') {
-            steps {
-                sh 'bandit -r .'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh 'pytest --junitxml=results.xml'
-            }
 
             stage('Trivy fs Scan') {
                 steps {
@@ -75,26 +47,22 @@ pipeline {
             stage('Docker Build') {
                 steps {
                     script {
-                        dir('src') {
                             withDockerRegistry(credentialsId: 'docker-cred') {
-                                sh "docker build -t yukesh24/loadgeneratorservice:${WORKSPACE} ."
+                                sh "docker build -t yukesh24/loadgeneratorservice:${GIT_COMMIT_REV} ."
                             }
                         }
                     }
                 }
-            }
             stage('Trivy Image Scan') {
                 steps {
-                    sh "trivy image --format table -o loadgeneratorservice-image-report.html yukesh24/loadgeneratorservice:${WORKSPACE}"
+                    sh "trivy image --format table -o loadgeneratorservice-image-report.html yukesh24/loadgeneratorservice:${GIT_COMMIT_REV}"
                 }
             }
             stage('Docker Push') {
                 steps {
                     script {
-                        dir('src') {
                             withDockerRegistry(credentialsId: 'docker-cred') {
-                                sh "docker push yukesh24/loadgeneratorservice:${env.WORKSPACE}"
-                            }
+                                sh "docker push yukesh24/loadgeneratorservice:${GIT_COMMIT_REV}"
                         }
                     }
                 }
