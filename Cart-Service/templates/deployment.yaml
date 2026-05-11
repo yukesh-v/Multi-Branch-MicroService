@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ Chart.Name }}
+  name: {{ .Chart.Name }}
 spec:
   selector:
     matchLabels:
-      app: {{ Chart.Name }}
+      app: {{ .Chart.Name }}
   replicas: {{ .Values.replicas }}
   template:
     metadata:
       labels:
-        app: {{ Chart.Name }}
+        app: {{ .Chart.Name }}
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
       containers:
-      - name: {{ Chart.Name }}
+      - name: {{ .Chart.Name }}
         image: {{ .Values.containers.image }}
         ports:
         - containerPort: {{ .Values.ports.containerPort }}
