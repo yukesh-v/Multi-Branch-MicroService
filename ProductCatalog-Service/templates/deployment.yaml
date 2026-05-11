@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ Chart.Name }}
+  name: {{ .Chart.Name }}
 spec:
   selector:
     matchLabels:
-      app: {{ Chart.Name }}
+      app: {{ .Chart.Name }}
   replicas: {{ .Values.replicaCount }}
   template:
     metadata:
       labels:
-        app: {{ Chart.Name }}
+        app: {{ .Chart.Name }}
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
       containers:
-      - name: {{ Chart.Name }}
+      - name: {{ .Chart.Name }}
         image: {{ .Values.container.image }}
         ports:
         - containerPort: {{ .Values.ports.containerPort }}
         envFrom:
         - configMapRef:
-            name: "{{ Chart.Name }}-config"
+            name: "{{ .Chart.Name }}-config"
         readinessProbe:
           exec:
             command: ["/bin/grpc_health_probe", "-addr=:3550"]

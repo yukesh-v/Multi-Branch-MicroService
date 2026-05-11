@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ Chart.Name }}
+  name: {{ .Chart.Name }}
 spec:
   selector:
     matchLabels:
-      app: {{ Chart.Name }}
+      app: {{ .Chart.Name }}
   replicas: {{ .Values.replicaCount }}
   template:
     metadata:
       labels:
-        app: {{ Chart.Name }}
+        app: {{ .Chart.Name }}
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
@@ -33,7 +33,7 @@ spec:
         - containerPort: 8080
         envFrom:
         - configMapRef:
-            name: "{{ Chart.Name }}-config"
+            name: "{{ .Chart.Name }}-config"
         readinessProbe:
           periodSeconds: 5
           exec:

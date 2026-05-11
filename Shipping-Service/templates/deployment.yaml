@@ -1,26 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ Chart.Name }}
+  name: {{ .Chart.Name }}
 spec:
   selector:
     matchLabels:
-      app: {{ Chart.Name }}
+      app: {{ .Chart.Name }}
   replicas: {{ .Values.replicas }}
   template:
     metadata:
       labels:
-        app: {{ Chart.Name }}
+        app: {{ .Chart.Name }}
     spec:
       serviceAccountName: default
       containers:
-      - name: {{ Chart.Name }}
+      - name: {{ .Chart.Name }}
         image: {{ .Values.containers.image }}
         ports:
         - containerPort: {{ .Values.containers.containerPort }}
         envFrom:
         - configMapRef:
-            name: "{{ Chart.Name }}-config"
+            name: "{{ .Chart.Name }}-config"
         readinessProbe:
           periodSeconds: 5
           exec:

@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ Chart.Name }}
+  name: {{ .Chart.Name }}
 spec:
   selector:
     matchLabels:
-      app: {{ Chart.Name }}
+      app: {{ .Chart.Name }}
   replicas: {{ .Values.replicas }}
   template:
     metadata:
       labels:
-        app: {{ Chart.Name }}
+        app: {{ .Chart.Name }}
     spec:
       containers:
-      - name: {{ Chart.Name }}
+      - name: {{ .Chart.Name }}
         image: {{ .Values.container.image }}
         ports:
         - containerPort: {{ .Values.containerPort }}
@@ -27,7 +27,7 @@ spec:
             port: {{ .Values.containerPort }}
         volumeMounts:
         - mountPath: /data
-          name: "{{ Chart.Name }}-data"
+          name: "{{ .Chart.Name }}-data"
         resources:
           limits:
             memory: {{ .Values.resources.limits.memory }}
@@ -36,5 +36,5 @@ spec:
             cpu: {{ .Values.resources.requests.cpu }}
             memory: {{ .Values.resources.requests.memory }}
       volumes:
-      - name: "{{ Chart.Name }}-data"
+      - name: "{{ .Chart.Name }}-data"
         emptyDir: {}

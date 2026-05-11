@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: configmap
 metadata:
-  name: "{{ Chart.Name }}-config"
+  name: "{{ .Chart.Name }}-config"
 data:
   PORT: "8080"
   PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"

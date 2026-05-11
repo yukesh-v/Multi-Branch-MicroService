@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ Chart.Name }}
+  name: {{ .Chart.Name }}
 spec:
   selector:
     matchLabels:
-      app: {{ Chart.Name }}
+      app: {{ .Chart.Name }}
   replicas: {{ .Values.replicaCount }}
   template:
     metadata:
       labels:
-        app: {{ Chart.Name }}
+        app: {{ .Chart.Name }}
       annotations:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       serviceAccountName: default
       containers:
-        - name: server
+        - name: {{ .Chart.Name }}
           image: {{ .Values.container.image }}
           ports:
           - containerPort: 8080
@@ -38,7 +38,7 @@ spec:
                 value: "shop_session-id=x-liveness-probe"
           envFrom:
           - configMapRef:
-              name: "{{ Chart.Name }}-config"
+              name: "{{ .Chart.Name }}-config"
           resources:
             requests:
               cpu: {{ .Values.resource.requests.cpu }}
