@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ Chart.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ Chart.Name }}
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ Chart.Name }}
+    spec:
+      serviceAccountName: default
+      containers:
+        - name: {{ Chart.Name }}
+          image: {{ .Values.containers.image }}
+          ports:
+          - containerPort: {{ .Values.ports.containerPort }}
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:5050"]
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:5050"]
+          envFrom:
+          - configMapRef:
+              name: "{{ Chart.Name }}-config"
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}

@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ Chart.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ Chart.Name }}
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ Chart.Name }}
+      annotations:
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+      restartPolicy: Always
+      containers:
+      - name: {{ Chart.Name }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+        image: {{ .Values.containers.image }}
+        envFrom:
+        - configMapRef:
+            name: "{{ Chart.Name }}-config"
+        resources:
+          requests:
+            cpu: {{ .Values.containers.resources.requests.cpu }}
+            memory: {{ .Values.containers.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.containers.resources.limits.cpu }}
+            memory: {{ .Values.containers.resources.limits.memory }}

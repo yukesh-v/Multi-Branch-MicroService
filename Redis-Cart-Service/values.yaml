@@ -1,0 +1,18 @@
+replicas: 1
+
+container:
+  image: redis:alpine
+resources:
+  limits:
+    memory: 256Mi
+    cpu: 125m
+  requests:
+    cpu: 70m
+    memory: 200Mi
+
+containerPort: 6379
+
+periodSeconds: 5
+
+service:
+  type: ClusterIP

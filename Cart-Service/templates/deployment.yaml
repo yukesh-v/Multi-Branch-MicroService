@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ Chart.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ Chart.Name }}
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ Chart.Name }}
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: {{ Chart.Name }}
+        image: {{ .Values.containers.image }}
+        ports:
+        - containerPort: {{ .Values.ports.containerPort }}
+        env:
+        - name: {{ .Values.ports.env.name }}
+          value: {{ .Values.ports.env.value }}
+        resources:
+          requests:
+            cpu: {{ .Values.ports.resources.requests.cpu }}
+            memory: {{ .Values.ports.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.ports.resources.limits.cpu }}
+            memory: {{ .Values.ports.resources.limits.memory }}
+        readinessProbe:
+          initialDelaySeconds: 15
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]
+        livenessProbe:
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:7070", "-rpc-timeout=5s"]

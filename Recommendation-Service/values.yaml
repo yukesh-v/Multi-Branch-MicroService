@@ -1,0 +1,18 @@
+containers:
+  image: yukesh24/recommendationservice:01f5303
+
+replicas: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 220Mi
+  limits:
+    cpu: 200m
+    memory: 450Mi
+
+ports:
+  containerPort: 8080
+
+service:
+  type: ClusterIP

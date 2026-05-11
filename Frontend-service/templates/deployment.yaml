@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ Chart.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ Chart.Name }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ Chart.Name }}
+      annotations:
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    spec:
+      serviceAccountName: default
+      containers:
+        - name: server
+          image: {{ .Values.container.image }}
+          ports:
+          - containerPort: 8080
+          readinessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              path: {{ .Values.httpGet.path }}
+              port: 8080
+              httpHeaders:
+              - name: "Cookie"
+                value: "shop_session-id=x-readiness-probe"
+          livenessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              path: {{ .Values.httpGet.path }}
+              port: 8080
+              httpHeaders:
+              - name: "Cookie"
+                value: "shop_session-id=x-liveness-probe"
+          envFrom:
+          - configMapRef:
+              name: "{{ Chart.Name }}-config"
+          resources:
+            requests:
+              cpu: {{ .Values.resource.requests.cpu }}
+              memory: {{ .Values.resource.requests.memory }}
+            limits:
+              cpu: {{ .Values.resource.limits.cpu }}
+              memory: {{ .Values.resource.limits.memory }}

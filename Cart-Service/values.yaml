@@ -1,0 +1,20 @@
+containers:
+  image: yukesh24/cartservice:fa4bbf9
+  
+ports:
+  containerPort: 7070
+  env:
+  - name: REDIS_ADDR
+    value: "redis-cart:6379"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 64Mi
+    limits:
+      cpu: 300m
+      memory: 128Mi
+
+service:
+  type: ClusterIP
+
+replicas: 1

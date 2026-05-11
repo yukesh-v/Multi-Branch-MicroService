@@ -1,0 +1,16 @@
+containers:
+  image: yukesh24/currencyservice:d631636
+  port: 7000
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+replicas: 1
+
+service:
+  type: ClusterIP

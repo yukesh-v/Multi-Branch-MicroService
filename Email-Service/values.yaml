@@ -1,0 +1,15 @@
+container:
+   image: yukesh24/emailservice:8a8219c
+
+resources:
+  requests:
+     cpu: 100m
+     memory: 64Mi
+  limits:
+     cpu: 200m
+     memory: 128Mi
+
+service:
+  type: ClusterIP
+
+replicaCount: 1

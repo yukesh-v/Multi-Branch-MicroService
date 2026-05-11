@@ -1,0 +1,18 @@
+containers:
+  image: yukesh24/paymentservice:9ccd414
+
+ports:
+  containerPort: 50051
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+service:
+  type: ClusterIP
+
+replicas: 1

@@ -1,0 +1,11 @@
+containers:
+  image: yukesh24/loadgeneratorservice:11012c2
+  resources:
+    requests:
+      cpu: 300m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  replicas: 1

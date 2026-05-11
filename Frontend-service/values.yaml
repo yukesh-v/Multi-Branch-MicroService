@@ -1,0 +1,18 @@
+container:
+  image: "yukesh24/frontendservice:e963138"
+
+resource:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi
+
+service:
+  type: LoadBalancer
+
+httpGet:
+  path: "/_healthz"
+
+replicaCount: 2
