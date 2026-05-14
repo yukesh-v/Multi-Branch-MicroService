@@ -3,6 +3,6 @@ kind: ConfigMap
 metadata:
   name: "{{ .Chart.Name }}-config"
 data:
-  PORT: "{{ .Values.service.port }}"
+  PORT: "{{ .Values.ports.containerPort }}"
   PRODUCT_CATALOG_SERVICE_ADDR: "productcatalogservice:3550"
   DISABLE_PROFILER: "1"
